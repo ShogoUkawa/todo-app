@@ -1,0 +1,26 @@
+# Render blueprint — https://docs.render.com/blueprints
+#
+# Before deploying, set these env vars in the Render dashboard:
+#   DATABASE_URL  – PostgreSQL connection string
+#                  (Render free tier does not include managed Postgres;
+#                   use an external provider such as Neon: https://neon.tech)
+#   FRONTEND_URL  – The origin of your frontend, used for CORS.
+#                  Example: https://YOUR_USERNAME.github.io
+#                  (origin only — no path)
+#
+# After the first successful deploy, run migrations via Render's shell:
+#   cd backend && uv run alembic upgrade head
+
+services:
+  - type: web
+    name: todo-api
+    env: python
+    plan: free
+    buildCommand: pip install uv && cd backend && uv sync --all-extras
+    startCommand: cd backend && uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        value: ""
+      - key: FRONTEND_URL
+        value: ""

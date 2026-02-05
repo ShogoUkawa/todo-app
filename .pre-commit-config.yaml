@@ -1,0 +1,28 @@
+repos:
+  # ─── Python (ruff) ──────────────────────────────────────
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+        files: ^backend/
+      - id: ruff-format
+        files: ^backend/
+
+  # ─── Frontend (biome) ────────────────────────────────────
+  # nvm.sh cannot be sourced in non-interactive bash; we resolve
+  # the Node 20 binary path via a glob on the nvm versions tree.
+  - repo: local
+    hooks:
+      - id: biome-check
+        name: biome check
+        entry: "bash -c 'NODE_BIN=$(ls -d $HOME/.nvm/versions/node/v20.*/bin 2>/dev/null | head -1) && export PATH=$NODE_BIN:$PATH && cd frontend && npx biome check .'"
+        language: system
+        types_or: [javascript, ts, jsx, tsx]
+        pass_filenames: false
+      - id: biome-format
+        name: biome format
+        entry: "bash -c 'NODE_BIN=$(ls -d $HOME/.nvm/versions/node/v20.*/bin 2>/dev/null | head -1) && export PATH=$NODE_BIN:$PATH && cd frontend && npx biome format .'"
+        language: system
+        types_or: [javascript, ts, jsx, tsx]
+        pass_filenames: false
