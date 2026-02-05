@@ -1,124 +1,161 @@
 # TODO App
 
-A full-stack TODO application — **Next.js** frontend + **FastAPI** backend — built with Clean Architecture and DDD.
+シンプルなTODO管理アプリケーション。Next.js + Supabase で構築されています。
+
+🌐 **Live Demo**: https://shogoukawa.github.io/todo-app/
+
+---
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
 | Frontend | Next.js 15 (App Router), TypeScript |
-| Backend | FastAPI, Python 3.12+, SQLAlchemy 2.0 (async) |
-| Database | PostgreSQL 16 |
-| Architecture | Clean Architecture + DDD (single bounded context) |
+| Backend | Supabase (PostgreSQL + REST API) |
+| Deployment | GitHub Pages (frontend) |
+| Styling | CSS Modules |
+| Linting/Formatting | Biome |
 
 ---
 
 ## Prerequisites
 
-- **Node.js 20+** — a `.nvmrc` is in the repo root. If you use [nvm](https://github.com/nvm-sh/nvm), run `nvm use` once.
-- **[uv](https://docs.astral.sh/uv/)** — Python package manager.
-- **[Docker](https://docs.docker.com/get-docker/) + Compose** — runs PostgreSQL locally.
-- **[just](https://github.com/casey/just)** — task runner (optional; manual commands are shown below).
+- **Node.js 20+** — `.nvmrc` で管理。[nvm](https://github.com/nvm-sh/nvm) 使用時は `nvm use` を実行
+- **[just](https://github.com/casey/just)** (optional) — タスクランナー
 
 ---
 
 ## Quick Start
 
+### 1. リポジトリのクローン
+
 ```bash
-git clone https://github.com/YOUR_USERNAME/todo-app.git
+git clone https://github.com/ShogoUkawa/todo-app.git
 cd todo-app
-
-just bootstrap          # install deps + start DB + migrate
-just dev                # start backend & frontend
 ```
 
-### Without `just`
+### 2. Supabase プロジェクトのセットアップ
+
+1. [Supabase](https://supabase.com) でアカウント作成
+2. 新しいプロジェクトを作成
+3. SQL Editor で以下を実行:
+
+```sql
+CREATE TABLE todos (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  description TEXT,
+  completed BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+ALTER TABLE todos DISABLE ROW LEVEL SECURITY;
+```
+
+4. Settings → API から以下をコピー:
+   - Project URL
+   - anon public key
+
+### 3. 環境変数の設定
 
 ```bash
-docker compose up -d                              # 1. PostgreSQL → localhost:5433
-
-cd backend
-uv sync --all-extras                              # 2. install deps
-uv run alembic upgrade head                       # 3. migrate
-uv run uvicorn app.main:app --reload              # 4. backend  → localhost:8000
-
-# ── in a new terminal ──────────────────────────
-cd ../frontend
-npm install                                       # 5. install deps
-npm run dev                                       # 6. frontend → localhost:3000
-
-# ── one-time, after the above ──────────────────────
-cd ../backend
-uv run pre-commit install                         # 7. git hooks
+cd frontend
+cp .env.example .env.local
 ```
+
+`.env.local` を編集:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
+
+### 4. 起動
+
+```bash
+# just を使う場合
+just bootstrap
+just dev
+
+# 手動の場合
+cd frontend
+npm install
+npm run dev
+```
+
+アプリは http://localhost:3000 で起動します。
 
 ---
 
-## Task Reference
+## Available Commands
 
-| Command | What it does |
+### just を使用
+
+| Command | 説明 |
 |---|---|
-| `just bootstrap` | Install deps, start DB, create test DB, run migrations |
-| `just dev` | Start backend + frontend together |
-| `just backend` | Backend dev server only |
-| `just frontend` | Frontend dev server only |
-| `just test` | Run all backend tests |
-| `just lint` | Lint backend (ruff) + frontend (biome) |
-| `just migrate` | Apply pending migrations |
-| `just migrate-new "msg"` | Generate a new Alembic migration |
-| `just db-shell` | Drop into a `psql` session |
-| `just pre-commit-install` | Install pre-commit hooks (run once after clone) |
-| `just pre-commit-run` | Run all pre-commit hooks manually |
+| `just dev` | 開発サーバー起動 |
+| `just build` | プロダクションビルド |
+| `just lint` | コードのlint |
+| `just format` | コードのフォーマット |
+| `just install` | 依存関係のインストール |
+| `just bootstrap` | 初回セットアップ |
 
-Run `just --list` for the full set.
+### npm を直接使用
+
+```bash
+cd frontend
+npm run dev         # 開発サーバー
+npm run build       # プロダクションビルド
+npm run lint        # lint
+npm run format      # format
+```
 
 ---
 
 ## Deployment
 
-### Frontend → GitHub Pages
+### GitHub Pages
 
-Automated on every push to `main` via [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
+`main` ブランチへのpush時に自動デプロイされます（[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)）。
 
-**One-time setup:**
-1. Go to **repo → Settings → Pages → Source** and select **GitHub Actions**.
-2. Add a repository secret called `API_URL` whose value is your deployed backend URL (see the Render section below).
+**セットアップ:**
 
-The live site will appear at `https://YOUR_USERNAME.github.io/todo-app/`.
+1. **Settings → Pages → Source** を **GitHub Actions** に設定
+2. **Settings → Secrets → Actions** で以下を追加:
+   - `SUPABASE_URL`: Supabase の Project URL
+   - `SUPABASE_ANON_KEY`: Supabase の anon public key
 
-### Backend → Render
-
-A [Render blueprint](https://docs.render.com/blueprints) is provided in [`render.yaml`](render.yaml).
-
-**Setup:**
-1. Sign up at [render.com](https://render.com).
-2. Provision a PostgreSQL database. Render's free tier no longer includes managed Postgres, so use an external provider such as [Neon](https://neon.tech/) (free tier available).
-3. Create a new **Web Service** from this repo; Render will detect `render.yaml`.
-4. Set the two required environment variables in the Render dashboard:
-   - `DATABASE_URL` — your PostgreSQL connection string.
-   - `FRONTEND_URL` — the **origin** of your GitHub Pages site (scheme + host only, no path). Example: `https://YOUR_USERNAME.github.io`
-5. After the first deploy, open Render's shell and run migrations:
-   ```bash
-   cd backend && uv run alembic upgrade head
-   ```
+デプロイ後、`https://YOUR_USERNAME.github.io/todo-app/` でアクセス可能。
 
 ---
 
-## CI
+## CI/CD
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push and pull request to `main`:
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) が自動実行されます:
 
-- **Backend** — spins up a PostgreSQL service, runs migrations, executes `pytest`, lints with `ruff`.
-- **Frontend** — lints with Biome, runs a production build.
+- **Lint** - Biome でコード品質チェック
+- **Build** - プロダクションビルドの検証
 
 ---
 
-## Environment Variables
+## 料金
 
-| Variable | Where | Purpose |
-|---|---|---|
-| `DATABASE_URL` | `backend/.env` | PostgreSQL connection string |
-| `FRONTEND_URL` | `backend/.env` | Allowed CORS origin |
-| `NEXT_PUBLIC_API_URL` | `frontend/.env.local` | Backend base URL |
+完全無料で運用可能:
 
-`.env.example` and `backend/.env.example` contain templates; copy and fill in values before running.
+- **Supabase**: 無料プラン（500MB DB、5GB帯域/月）
+- **GitHub Pages**: 無料（公開リポジトリ）
+- **GitHub Actions**: 2,000分/月（公開リポジトリ）
+
+---
+
+## Documentation
+
+- **[保守運用ガイド](docs/MAINTENANCE.md)** - 日常的な運用方法、トラブルシューティング
+- **[開発ガイド](docs/CLAUDE.md)** - アーキテクチャ、コーディング規約
+
+---
+
+## License
+
+MIT

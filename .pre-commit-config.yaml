@@ -1,14 +1,4 @@
 repos:
-  # ─── Python (ruff) ──────────────────────────────────────
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.0
-    hooks:
-      - id: ruff
-        args: [--fix]
-        files: ^backend/
-      - id: ruff-format
-        files: ^backend/
-
   # ─── Frontend (biome) ────────────────────────────────────
   # nvm.sh cannot be sourced in non-interactive bash; we resolve
   # the Node 20 binary path via a glob on the nvm versions tree.
