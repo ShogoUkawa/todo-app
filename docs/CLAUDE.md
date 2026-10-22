@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 | Layer | Technology |
 |---|---|
-| Frontend | Next.js (App Router), TypeScript, Node.js 20+ (`.nvmrc` in root) |
+| Frontend | Next.js (App Router), TypeScript, Node.js 22.23.4 (`.nvmrc` in root) |
 | Frontend Tooling | Biome v2 (lint + format), Vitest + React Testing Library |
 | Backend | FastAPI, Python 3.12+, SQLAlchemy 2.0 (async) |
 | Backend Tooling | uv (package mgmt), Ruff (lint + format), mypy, pytest + httpx |
