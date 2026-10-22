@@ -20,7 +20,7 @@
 
 ## Prerequisites
 
-- **Node.js 20+** — `.nvmrc` で管理。[nvm](https://github.com/nvm-sh/nvm) 使用時は `nvm use` を実行
+- **Node.js 22.23.4** — `.nvmrc` で管理。[nvm](https://github.com/nvm-sh/nvm) 使用時は `nvm use` を実行
 - **[just](https://github.com/casey/just)** (optional) — タスクランナー
 
 ---

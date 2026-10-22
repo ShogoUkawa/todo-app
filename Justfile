@@ -1,4 +1,4 @@
-# Prerequisites: Node.js 20+ (see .nvmrc)
+# Prerequisites: Node.js 22.23.4 (see .nvmrc)
 # Run `just` to see available commands
 
 set shell := ["bash", "-c"]
